@@ -1,9 +1,13 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 
-const PORT = 8088;
+const PORT = (() => {
+    const p = parseInt(process.env.PORT, 10);
+    if (Number.isInteger(p) && p >= 1 && p <= 65535) return p;
+    return 8088;
+})();
 
 const MIME = {
     '.html': 'text/html; charset=utf-8',
@@ -29,12 +33,26 @@ const server = http.createServer((req, res) => {
     }
 
     // 解析 URL，去除查询参数
-    const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
+    let pathname;
+    try {
+        pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
+    } catch {
+        res.writeHead(400);
+        return res.end('Bad Request');
+    }
+
     let file = path.join(ROOT, pathname === '/' ? 'index.html' : decodeURIComponent(pathname));
     file = path.resolve(file);
 
+    // 禁止访问 ROOT 之外的路径
     const relative = path.relative(ROOT, file);
     if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        res.writeHead(403);
+        return res.end('Forbidden');
+    }
+
+    // 禁止访问隐藏文件/目录（如 .git）
+    if (relative.split(path.sep).some(seg => seg.startsWith('.'))) {
         res.writeHead(403);
         return res.end('Forbidden');
     }
@@ -56,6 +74,9 @@ const server = http.createServer((req, res) => {
             res.writeHead(200, {
                 'Content-Type': MIME[ext] || 'text/plain',
                 'X-Content-Type-Options': 'nosniff',
+                'X-Frame-Options': 'DENY',
+                'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline'",
+                'Referrer-Policy': 'no-referrer',
             });
             res.end(data);
         }
@@ -66,5 +87,5 @@ server.listen(PORT, () => {
     console.log(`服务器已启动: http://localhost:${PORT}`);
     console.log('按 Ctrl+C 关闭服务器');
 
-    exec('start http://localhost:' + PORT);
+    execFile('start', ['http://localhost:' + PORT]);
 });
