@@ -54,16 +54,20 @@ function handleCellClick(row, col) {
     // 更新最后一步标记
     updateLastMoveMarker();
 
-    // 检查是否获胜
+    // 检查是否获胜或平局
     if (game.gameOver) {
-        const winner = game.getCurrentPlayerName();
-        const elapsed = GomokuGame.formatTime(game.getElapsedTime());
-        winnerEl.textContent = `${winner} 获胜！`;
-        currentPlayerEl.textContent = "";
-        timerEl.textContent = `用时：${elapsed}`;
         stopTimerUpdate();
         undoBtn.disabled = true;
         boardEl.classList.add("game-over");
+        const elapsed = GomokuGame.formatTime(game.getElapsedTime());
+        timerEl.textContent = `用时：${elapsed}`;
+        currentPlayerEl.textContent = "";
+
+        if (game.isDraw()) {
+            winnerEl.textContent = "平局！";
+        } else {
+            winnerEl.textContent = `${game.getCurrentPlayerName()} 获胜！`;
+        }
         return;
     }
 
@@ -141,31 +145,26 @@ function handleRestart() {
  * 悔棋处理
  */
 function handleUndo() {
+    // 记录被撤销的那一步
+    const undone = game.history.length > 0
+        ? game.history[game.history.length - 1]
+        : null;
+
     if (!game.undo()) {
         return;
     }
 
-    // 移除最后一颗棋子
-    if (game.history.length >= 0) {
-        const last = game.history.length > 0
-            ? game.history[game.history.length - 1]
-            : null;
-
-        // 如果有悔棋前的最后一步，重新渲染
-        if (last) {
-            // 不需要重新创建，只需更新标记
+    // 仅移除被撤销的那一颗棋子
+    if (undone) {
+        const cell = getCell(undone.row, undone.col);
+        if (cell) {
+            const piece = cell.querySelector(".piece");
+            if (piece) {
+                piece.remove();
+            }
+            cell.classList.remove("occupied");
         }
     }
-
-    // 找到被撤销的那一步对应的格子，移除棋子
-    const { row, col } = game.lastMove
-        ? { row: game.lastMove.row, col: game.lastMove.col }
-        : { row: -1, col: -1 };
-
-    // 找到之前被撤销的棋子位置（历史记录弹出前的最后一步）
-    // 由于 undo() 已经弹出了最后一步，我们需要找被弹出的那个
-    // 这里简单处理：重新根据 board 状态渲染
-    refreshBoard();
 
     winnerEl.textContent = "";
     currentPlayerEl.textContent = `当前玩家：${game.getCurrentPlayerName()}`;

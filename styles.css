@@ -133,18 +133,9 @@ h1 {
     transform: translate(-50%, -50%);
 }
 
-/* 悬停效果 */
-.cell:hover:not(.occupied)::before {
-    content: "";
-    position: absolute;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.15);
-    z-index: 3;
+/* 悬停效果 - 使用径向渐变避免覆盖网格线 */
+.cell:hover:not(.occupied) {
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.15) 40%, transparent 41%);
 }
 
 .cell.occupied {

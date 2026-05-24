@@ -81,6 +81,13 @@ export class GomokuGame {
             return true;
         }
 
+        // 检查是否平局（棋盘已满）
+        if (this.history.length === GomokuGame.BOARD_SIZE * GomokuGame.BOARD_SIZE) {
+            this.gameOver = true;
+            this.stopTimer();
+            return true;
+        }
+
         // 切换玩家
         this.currentPlayer = this.currentPlayer === Piece.BLACK ? Piece.WHITE : Piece.BLACK;
         return true;
@@ -113,6 +120,17 @@ export class GomokuGame {
         }
 
         return true;
+    }
+
+    /**
+     * 检查是否为平局
+     * @returns {boolean}
+     */
+    isDraw() {
+        if (!this.gameOver || !this.lastMove) {
+            return false;
+        }
+        return !this.checkWin(this.lastMove.row, this.lastMove.col);
     }
 
     /**
@@ -264,11 +282,14 @@ export class GomokuGame {
      * @returns {boolean}
      */
     static isStarPoint(row, col) {
-        // 标准五子棋星位坐标
+        const size = GomokuGame.BOARD_SIZE;
+        const quarter = Math.floor(size / 4);
+        const half = Math.floor(size / 2);
+        const threeQuarter = size - quarter - 1;
         const starPoints = [
-            [3, 3], [3, 7], [3, 11],
-            [7, 3], [7, 7], [7, 11],
-            [11, 3], [11, 7], [11, 11],
+            [quarter, quarter], [quarter, half], [quarter, threeQuarter],
+            [half, quarter], [half, half], [half, threeQuarter],
+            [threeQuarter, quarter], [threeQuarter, half], [threeQuarter, threeQuarter],
         ];
         return starPoints.some(([r, c]) => r === row && c === col);
     }
