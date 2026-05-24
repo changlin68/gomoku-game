@@ -63,6 +63,7 @@ function handleCellClick(row, col) {
         timerEl.textContent = `用时：${elapsed}`;
         stopTimerUpdate();
         undoBtn.disabled = true;
+        boardEl.classList.add("game-over");
         return;
     }
 
@@ -132,6 +133,7 @@ function handleRestart() {
     timerEl.textContent = "时间：00:00";
     stopTimerUpdate();
     undoBtn.disabled = false;
+    boardEl.classList.remove("game-over");
     initBoard();
 }
 
@@ -168,6 +170,7 @@ function handleUndo() {
     winnerEl.textContent = "";
     currentPlayerEl.textContent = `当前玩家：${game.getCurrentPlayerName()}`;
     undoBtn.disabled = false;
+    boardEl.classList.remove("game-over");
     updateLastMoveMarker();
 }
 
