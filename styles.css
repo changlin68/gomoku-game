@@ -1,0 +1,220 @@
+/* 全局重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: linear-gradient(135deg, #f5f0e1 0%, #e8dfc8 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    color: #5d4037;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.info {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: #5d4037;
+    min-height: 30px;
+}
+
+#current-player {
+    font-weight: bold;
+}
+
+#winner {
+    color: #c62828;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: 20px;
+}
+
+/* 棋盘容器 */
+.board {
+    display: inline-grid;
+    grid-template-columns: repeat(15, 40px);
+    grid-template-rows: repeat(15, 40px);
+    gap: 0;
+    background-color: #deb887;
+    border: 3px solid #8b4513;
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    padding: 20px;
+}
+
+/* 棋盘交叉点 */
+.cell {
+    width: 40px;
+    height: 40px;
+    position: relative;
+    cursor: pointer;
+    z-index: 2;
+}
+
+/* 绘制网格线 */
+.cell::before,
+.cell::after {
+    content: "";
+    position: absolute;
+    background-color: #5d4037;
+}
+
+/* 水平线 */
+.cell::before {
+    width: 100%;
+    height: 1px;
+    top: 50%;
+    left: 0;
+}
+
+/* 垂直线 */
+.cell::after {
+    width: 1px;
+    height: 100%;
+    top: 0;
+    left: 50%;
+}
+
+/* 边缘格子：隐藏超出棋盘的线 */
+.cell[data-row="0"]::before { top: 50%; height: 50%; }
+.cell[data-row="14"]::before { top: 0; height: 50%; }
+.cell[data-col="0"]::after { left: 50%; width: 50%; }
+.cell[data-col="14"]::after { left: 0; width: 50%; }
+
+/* 棋子 */
+.piece {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    transition: transform 0.1s ease;
+}
+
+.piece.black {
+    background: radial-gradient(circle at 30% 30%, #666, #000);
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.piece.white {
+    background: radial-gradient(circle at 30% 30%, #fff, #ddd);
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 最后落子标记 */
+.piece.last-move::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #c62828;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 悬停效果 */
+.cell:hover:not(.occupied)::before {
+    content: "";
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.15);
+    z-index: 3;
+}
+
+.cell.occupied {
+    cursor: default;
+}
+
+/* 星位点（天元、小目等） */
+.star-point::before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #5d4037;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+/* 计时器 */
+.timer {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #5d4037;
+    background: linear-gradient(135deg, #f5e6c8, #e8d4a8);
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-family: "Courier New", monospace;
+    letter-spacing: 1px;
+}
+
+/* 控制按钮 */
+.controls {
+    margin-top: 25px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.controls button {
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-family: inherit;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #8b4513, #a0522d);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.controls button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.controls button:active {
+    transform: translateY(0);
+}
+
+.controls button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
